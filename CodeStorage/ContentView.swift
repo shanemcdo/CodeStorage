@@ -10,26 +10,39 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
-    var body: some View {
-        NavigationSplitView {
+    @Query private var items: [Code]
+    
+    @ViewBuilder
+    var list: some View {
+        if items.isEmpty {
+            Text("No Items to Display")
+        } else {
             List {
                 ForEach(items) { item in
                     NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                        VStack {
+                            Text(item.name)
+                            Text(item.code)
+                        }
                     } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                        Text(item.name)
                     }
                 }
                 .onDelete(perform: deleteItems)
             }
-            .toolbar {
+        }
+    }
+    
+    var body: some View {
+        NavigationSplitView {
+            list.toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
                 ToolbarItem {
-                    Button(action: addItem) {
+                    NavigationLink {
+                        AddCodeView()
+                    } label: {
                         Label("Add Item", systemImage: "plus")
                     }
                 }
@@ -38,14 +51,8 @@ struct ContentView: View {
             Text("Select an item")
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
+    
+    
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -57,5 +64,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Code.self, inMemory: true)
 }
